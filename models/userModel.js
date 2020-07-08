@@ -1,6 +1,9 @@
 const { Schema, model } = require('mongoose')
-const { hash } = require('bcryptjs')
+const { hash, compare } = require('bcryptjs')
+const { sign } = require('jsonwebtoken')
 const { isEmail } = require('validator')
+
+const AppError = require('../utils/appError')
 
 const userSchema = new Schema(
   {
@@ -30,11 +33,31 @@ const userSchema = new Schema(
 
 // Hash the plan text password before saving
 userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
-    this.password = await hash(this.password, 12)
+  const user = this
+  if (user.isModified('password')) {
+    user.password = await hash(user.password, 12)
   }
   next()
 })
+
+// Generate Auth Token
+userSchema.methods.generateAuthToken = function () {
+  const user = this
+  const token = sign(
+    { id: user.id }, process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN }
+  )
+  return token
+}
+
+// Find By Credentials
+userSchema.statics.findByCredentials = async (email, password) => {
+  const user = await User.findOne({ email })
+  if (!user || !(await compare(password, user.password))) {
+    throw new AppError('Email or Password is Invalid!', 401)
+  }
+  return user
+}
 
 const User = model('User', userSchema)
 
