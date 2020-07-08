@@ -1,8 +1,8 @@
-const express = require('express')
+const { Router } = require('express')
 
 const tourController = require('./../controllers/tourController')
 
-const router = express.Router()
+const router = Router()
 
 router.route('/top-5-cheap')
   .get(tourController.aliasTopTours, tourController.getTours)

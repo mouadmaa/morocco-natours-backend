@@ -20,6 +20,7 @@ app.get('/', (_, res) => {
 })
 
 // API Route
+app.use('/api/v1/users', require('./routes/userRoutes'))
 app.use('/api/v1/tours', require('./routes/tourRoutes'))
 
 // Server not find (404)
