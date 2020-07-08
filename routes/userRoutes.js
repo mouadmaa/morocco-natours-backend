@@ -1,6 +1,6 @@
 const { Router } = require('express')
 
-// const userController = require('./../controllers/userController')
+const userController = require('./../controllers/userController')
 const authController = require('./../controllers/authController')
 
 const router = Router()
@@ -8,13 +8,16 @@ const router = Router()
 router.route('/signup')
   .post(authController.signup)
 
-// router.route('/')
-//   .get(userController.getUsers)
-//   .post(userController.createUser)
+router.route('/login')
+  .post(authController.login)
 
-// router.route('/:id')
-//   .get(userController.getUser)
-//   .patch(userController.updateUser)
-//   .delete(userController.deleteUser)
+router.route('/')
+  .get(userController.getUsers)
+  .post(userController.createUser)
+
+router.route('/:id')
+  .get(userController.getUser)
+  .patch(userController.updateUser)
+  .delete(userController.deleteUser)
 
 module.exports = router
