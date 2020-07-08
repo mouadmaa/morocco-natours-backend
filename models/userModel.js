@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose')
+const { hash } = require('bcryptjs')
 const { isEmail } = require('validator')
 
 const userSchema = new Schema(
@@ -19,17 +20,21 @@ const userSchema = new Schema(
       required: [true, 'Please provide a password'],
       minlength: [8, 'A password must have more or equal then 8 characters']
     },
-    passwordConfirm: {
-      type: String,
-      required: [true, 'Please provide a password']
-    },
-    photo: String,
+    photo: String
   },
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
   }
 )
+
+// Hash the plan text password before saving
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    this.password = await hash(this.password, 12)
+  }
+  next()
+})
 
 const User = model('User', userSchema)
 
