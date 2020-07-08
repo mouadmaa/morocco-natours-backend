@@ -23,7 +23,8 @@ const userSchema = new Schema(
       required: [true, 'Please provide a password'],
       minlength: [8, 'A password must have more or equal then 8 characters']
     },
-    photo: String
+    photo: String,
+    passwordChangedAt: Date
   },
   {
     toJSON: { virtuals: true },
@@ -57,6 +58,15 @@ userSchema.statics.findByCredentials = async (email, password) => {
     throw new AppError('Email or Password is Invalid!', 401)
   }
   return user
+}
+
+// Check if user changed password after the token wass issued
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10)
+    return JWTTimestamp < changedTimestamp
+  }
+  return false
 }
 
 const User = model('User', userSchema)
