@@ -23,6 +23,11 @@ const userSchema = new Schema(
       required: [true, 'Please provide a password'],
       minlength: [8, 'A password must have more or equal then 8 characters']
     },
+    role: {
+      type: String,
+      enum: ['user', 'guide', 'lead-guide', 'admin'],
+      default: 'user'
+    },
     photo: String,
     passwordChangedAt: Date
   },
