@@ -1,3 +1,5 @@
+const { randomBytes, createHash } = require('crypto')
+
 const { Schema, model } = require('mongoose')
 const { hash, compare } = require('bcryptjs')
 const { sign } = require('jsonwebtoken')
@@ -11,6 +13,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, 'Please tell us your name']
     },
+    photo: String,
     email: {
       type: String,
       required: [true, 'Please provide your email'],
@@ -23,13 +26,22 @@ const userSchema = new Schema(
       required: [true, 'Please provide a password'],
       minlength: [8, 'A password must have more or equal then 8 characters']
     },
+    passwordConfirm: {
+      type: String,
+      required: [true, 'Please confirm your password'],
+      validate: {
+        validator: function (el) { return el === this.password },
+        message: 'Passwords are not the same!'
+      }
+    },
     role: {
       type: String,
       enum: ['user', 'guide', 'lead-guide', 'admin'],
       default: 'user'
     },
-    photo: String,
-    passwordChangedAt: Date
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date
   },
   {
     toJSON: { virtuals: true },
@@ -42,6 +54,7 @@ userSchema.pre('save', async function (next) {
   const user = this
   if (user.isModified('password')) {
     user.password = await hash(user.password, 12)
+    user.passwordConfirm = undefined
   }
   next()
 })
@@ -72,6 +85,15 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     return JWTTimestamp < changedTimestamp
   }
   return false
+}
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = randomBytes(32).toString('hex')
+
+  this.passwordResetToken = createHash('sha256').update(resetToken).digest('hex')
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000
+
+  return resetToken
 }
 
 const User = model('User', userSchema)
