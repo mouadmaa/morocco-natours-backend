@@ -55,6 +55,10 @@ userSchema.pre('save', async function (next) {
   if (user.isModified('password')) {
     user.password = await hash(user.password, 12)
     user.passwordConfirm = undefined
+
+    if (!user.isNew) {
+      user.passwordChangedAt = Date.now() - 5000
+    }
   }
   next()
 })
