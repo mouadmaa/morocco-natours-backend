@@ -1,6 +1,8 @@
 const express = require('express')
 const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
+const mongoSanitize = require('express-mongo-sanitize')
+const xss = require('xss-clean')
 require('express-async-errors')
 
 const AppError = require('./utils/appError')
@@ -22,6 +24,11 @@ app.use('/api', rateLimit({
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }))
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize())
+// Data sanitization against XSS
+app.use(xss())
 
 // ------------ ROUTES ------------
 // Home Route
