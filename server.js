@@ -18,12 +18,12 @@ const app = require('./app')
       useUnifiedTopology: true,
       useFindAndModify: false,
     })
-    console.log('Database Is Connected...')
+    console.log('Database is connected...')
   })()
 
 // Server
 const server = app.listen(process.env.PORT, () => {
-  console.log(`Server Is Running...`)
+  console.log(`Server is running...`)
 })
 
 process.on('unhandledRejection', err => {
