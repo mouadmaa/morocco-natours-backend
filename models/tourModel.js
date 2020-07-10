@@ -72,16 +72,41 @@ const tourSchema = new Schema(
     secretTour: {
       type: Boolean,
       default: false
-    }
+    },
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    locations: [{
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+      day: Number
+    }],
+    guides: [{
+      type: Schema.ObjectId,
+      ref: 'User'
+    }]
   },
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
   }
-);
+)
 
 tourSchema.virtual('durationWeeks').get(function () {
-  return this.duration / 7
+  return (this.duration / 7).toFixed(2)
 })
 
 tourSchema.pre('save', function (next) {
@@ -89,16 +114,13 @@ tourSchema.pre('save', function (next) {
   next()
 })
 
-// QUERY MIDDLEWARE
 tourSchema.pre(/^find/, function (next) {
-  this.find({ secretTour: { $ne: true } })
+  this.find({ secretTour: false })
   next()
 })
 
-// AGGREGATION MIDDLEWARE
 tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } })
-  console.log(this.pipeline())
+  this.pipeline().unshift({ $match: { secretTour: false } })
   next()
 })
 

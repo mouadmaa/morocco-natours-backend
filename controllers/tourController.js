@@ -2,7 +2,7 @@ const Tour = require('./../models/tourModel')
 const factory = require('./../controllers/handlerFactory')
 
 exports.getTours = factory.getAll(Tour)
-exports.getTour = factory.getOne(Tour)
+exports.getTour = factory.getOne(Tour, 'guides')
 exports.createTour = factory.createOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
 exports.deleteTour = factory.deleteOne(Tour)
