@@ -9,11 +9,8 @@ const sendEmail = require('../services/email')
 
 exports.signup = async (req, res) => {
   const { name, email, password, passwordConfirm } = req.body
-
   const user = await User.create({ name, email, password, passwordConfirm })
-  const token = user.generateAuthToken()
-
-  res.status(201).send({ token })
+  createSendToken(res, user)
 }
 
 exports.login = async (req, res) => {
@@ -24,9 +21,7 @@ exports.login = async (req, res) => {
   }
 
   const user = await User.findByCredentials(email, password)
-  const token = user.generateAuthToken()
-
-  res.send({ token })
+  createSendToken(res, user)
 }
 
 exports.protect = async (req, _, next) => {
@@ -125,8 +120,7 @@ exports.resetPassword = async (req, res) => {
   await user.save()
 
   // 4) Log the user in, send JWt
-  const token = user.generateAuthToken()
-  res.send({ token })
+  createSendToken(res, user)
 }
 
 exports.updateMyPassword = async (req, res) => {
@@ -144,6 +138,27 @@ exports.updateMyPassword = async (req, res) => {
   await user.save()
 
   // 4) Log user in, send JWT
+  createSendToken(res, user)
+}
+
+const createSendToken = (res, user) => {
   const token = user.generateAuthToken()
-  res.send({ token })
+
+  const cookieOptions = {
+    expires: new Date(Date.now() +
+      process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true
+  }
+  res.cookie('jwt', token, cookieOptions)
+
+  res.send({
+    token, user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      photo: user.photo,
+    }
+  })
 }

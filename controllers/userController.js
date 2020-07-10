@@ -1,7 +1,6 @@
 const User = require('../models/userModel')
 const factory = require('./handlerFactory')
 const AppError = require('../utils/appError')
-const filterObj = require('../utils/filterObj')
 
 exports.getUsers = factory.getAll(User)
 exports.getUser = factory.getOne(User)
@@ -29,4 +28,14 @@ exports.updateMe = async (req, res) => {
 exports.deleteMe = async (req, res) => {
   await User.findByIdAndUpdate(req.user.id, { active: false })
   res.status(204).send()
+}
+
+const filterObj = (obj, ...allwedFields) => {
+  const newObj = {}
+  for (const key in obj) {
+    if (allwedFields.includes(key)) {
+      newObj[key] = obj[key]
+    }
+  }
+  return newObj
 }
