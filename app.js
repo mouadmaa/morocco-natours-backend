@@ -48,6 +48,7 @@ app.get('/', (_, res) => {
 // API Routes
 app.use('/api/v1/users', require('./routes/userRoutes'))
 app.use('/api/v1/tours', require('./routes/tourRoutes'))
+app.use('/api/v1/reviews', require('./routes/reviewRoutes'))
 
 // Server not find (404)
 app.all('*', (req, _, next) => next(

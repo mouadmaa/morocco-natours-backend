@@ -105,6 +105,12 @@ const tourSchema = new Schema(
   }
 )
 
+tourSchema.virtual('reviews', {
+  localField: '_id',
+  ref: 'Review',
+  foreignField: 'tour'
+})
+
 tourSchema.virtual('durationWeeks').get(function () {
   return (this.duration / 7).toFixed(2)
 })
@@ -116,6 +122,7 @@ tourSchema.pre('save', function (next) {
 
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: false })
+  this.populate({ path: 'guides', select: 'name email' })
   next()
 })
 
