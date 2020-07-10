@@ -24,7 +24,8 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, 'Please provide a password'],
-      minlength: [8, 'A password must have more or equal then 8 characters']
+      minlength: [8, 'A password must have more or equal then 8 characters'],
+      select: false
     },
     passwordConfirm: {
       type: String,
@@ -75,11 +76,16 @@ userSchema.methods.generateAuthToken = function () {
 
 // Find By Credentials
 userSchema.statics.findByCredentials = async (email, password) => {
-  const user = await User.findOne({ email })
+  const user = await User.findOne({ email }).select('+password')
   if (!user || !(await compare(password, user.password))) {
     throw new AppError('Email or Password is Invalid!', 401)
   }
   return user
+}
+
+// Check correct password
+userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
+  return await compare(candidatePassword, userPassword)
 }
 
 // Check if user changed password after the token wass issued

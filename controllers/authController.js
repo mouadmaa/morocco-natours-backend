@@ -47,7 +47,7 @@ exports.protect = async (req, _, next) => {
   const { id, iat } = await promisify(verify)(token, process.env.JWT_SECRET)
 
   // 3) Check if user still exists
-  const currentUser = await User.findById(id).select('-password')
+  const currentUser = await User.findById(id).select('name email role')
   if (!currentUser) {
     throw new AppError('The user belonging to this token does no longer exist.', 401)
   }
@@ -125,6 +125,25 @@ exports.resetPassword = async (req, res) => {
   await user.save()
 
   // 4) Log the user in, send JWt
+  const token = user.generateAuthToken()
+  res.send({ token })
+}
+
+exports.updateMyPassword = async (req, res) => {
+  // 1) Get user from collection
+  const user = await User.findById(req.user.id).select('+password')
+
+  // 2) Check if POSTed current password is correnct 
+  if (!(await user.correctPassword(req.body.PasswordCurrent, user.password))) {
+    throw new AppError('Your current password is wrong.', 401)
+  }
+
+  // 3) If so, update password
+  user.password = req.body.password
+  user.passwordConfirm = req.body.passwordConfirm
+  await user.save()
+
+  // 4) Log user in, send JWT
   const token = user.generateAuthToken()
   res.send({ token })
 }
