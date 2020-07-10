@@ -52,5 +52,5 @@ exports.deleteOne = Model => async (req, res) => {
     throw new AppError(`Aucun document trouvé avec cet ID`, 404)
   }
 
-  res.status(404).send()
+  res.status(204).send()
 }

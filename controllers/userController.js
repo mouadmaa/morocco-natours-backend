@@ -25,3 +25,8 @@ exports.updateMe = async (req, res) => {
 
   res.send(user)
 }
+
+exports.deleteMe = async (req, res) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false })
+  res.status(204).send()
+}

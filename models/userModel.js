@@ -40,6 +40,11 @@ const userSchema = new Schema(
       enum: ['user', 'guide', 'lead-guide', 'admin'],
       default: 'user'
     },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false
+    },
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date
@@ -105,6 +110,12 @@ userSchema.methods.createPasswordResetToken = function () {
 
   return resetToken
 }
+
+// Get only active users
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: true })
+  next()
+})
 
 const User = model('User', userSchema)
 
