@@ -2,7 +2,8 @@ const AppError = require('./../utils/appError')
 const APIFeatures = require('./../utils/apiFeatures')
 
 exports.getAll = (Model, popOptions) => async (req, res) => {
-  let filter = {} // filter = { training: req.params.trainingId }
+  let filter = {}
+  if (req.params.tourId) filter = { tour: req.params.tourId }
 
   const features = new APIFeatures(Model.find(filter), req.query)
     .filter().sort().limitFields().paginate()
