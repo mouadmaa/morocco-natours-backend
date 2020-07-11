@@ -8,6 +8,11 @@ exports.createUser = factory.createOne(User)
 exports.updateUser = factory.updateOne(User)
 exports.deleteUser = factory.deleteOne(User)
 
+exports.getMe = (req, _, next) => {
+  req.params.id = req.user.id
+  next()
+}
+
 exports.updateMe = async (req, res) => {
   // Create error if user POSTsd password data
   if (req.body.password || req.body.passwordConfirm) {
