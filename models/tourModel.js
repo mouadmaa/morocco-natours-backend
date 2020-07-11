@@ -71,7 +71,8 @@ const tourSchema = new Schema(
     startDates: [Date],
     secretTour: {
       type: Boolean,
-      default: false
+      default: false,
+      select: false
     },
     startLocation: {
       type: {
