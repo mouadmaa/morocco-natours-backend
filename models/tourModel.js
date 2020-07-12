@@ -31,7 +31,8 @@ const tourSchema = new Schema(
       type: Number,
       default: 4.5,
       min: [1, 'Rating must be above 1.0'],
-      max: [5, 'Rating must be below 5.0']
+      max: [5, 'Rating must be below 5.0'],
+      set: val => Math.round(val * 10) / 10
     },
     ratingsQuantity: {
       type: Number,
@@ -116,7 +117,7 @@ tourSchema.index({ price: 1, ratingsAverage: -1 })
 tourSchema.index({ slug: 1 })
 
 tourSchema.virtual('durationWeeks').get(function () {
-  return (this.duration / 7).toFixed(2)
+  return Math.round((this.duration / 7) * 10) / 10
 })
 
 tourSchema.pre('save', function (next) {
@@ -126,7 +127,7 @@ tourSchema.pre('save', function (next) {
 
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: false })
-  this.populate({ path: 'guides', select: 'name email' })
+  this.populate({ path: 'guides', select: 'name email photo' })
   next()
 })
 
