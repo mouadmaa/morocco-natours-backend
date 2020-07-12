@@ -115,6 +115,7 @@ tourSchema.virtual('reviews', {
 
 tourSchema.index({ price: 1, ratingsAverage: -1 })
 tourSchema.index({ slug: 1 })
+tourSchema.index({ startLocation: '2dsphere' })
 
 tourSchema.virtual('durationWeeks').get(function () {
   return Math.round((this.duration / 7) * 10) / 10
@@ -131,10 +132,10 @@ tourSchema.pre(/^find/, function (next) {
   next()
 })
 
-tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { secretTour: false } })
-  next()
-})
+// tourSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({ $match: { secretTour: false } })
+//   next()
+// })
 
 const Tour = model('Tour', tourSchema)
 

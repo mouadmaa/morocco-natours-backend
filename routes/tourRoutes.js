@@ -11,6 +11,8 @@ router.use('/:tourId/reviews', reviewRouter)
 router.get('/top-5-cheap', tourController.aliasTopTours, tourController.getTours)
 router.get('/tour-stats', tourController.getTourStats)
 router.get('/monthly-plan/:year', authController.protect, authController.restrictTo('admin', 'lead-guide', 'guide'), tourController.getMonthlyPlan)
+router.get('/tours-within/:distance/center/:latlng/unit/:unit', tourController.getToursWithin)
+router.get('/distances/:latlng/unit/:unit', tourController.getDistances)
 
 router.route('/')
   .get(tourController.getTours)
