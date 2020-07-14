@@ -14,12 +14,15 @@ const ErrorHandler = require('./controllers/errorController')
 const app = express()
 
 // ------------ GLOBAL MIDDLEWARES ------------
-// Secure Express apps by setting various HTTP headers
-app.use(helmet())
-
 // Implement CORS
 app.use(cors())
 app.options('*', cors())
+
+// Secure Express apps by setting various HTTP headers
+app.use(helmet())
+
+// Serving static images
+app.use('/images', express.static('images'))
 
 // Basic rate-limiting middleware for Express
 app.use('/api', rateLimit({
