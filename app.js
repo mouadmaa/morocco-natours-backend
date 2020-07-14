@@ -2,6 +2,7 @@ const express = require('express')
 const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
 const mongoSanitize = require('express-mongo-sanitize')
+const cors = require('cors')
 const xss = require('xss-clean')
 const hpp = require('hpp')
 require('express-async-errors')
@@ -15,6 +16,10 @@ const app = express()
 // ------------ GLOBAL MIDDLEWARES ------------
 // Secure Express apps by setting various HTTP headers
 app.use(helmet())
+
+// Implement CORS
+app.use(cors())
+app.options('*', cors())
 
 // Basic rate-limiting middleware for Express
 app.use('/api', rateLimit({
