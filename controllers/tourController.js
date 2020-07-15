@@ -8,6 +8,17 @@ exports.createTour = factory.createOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
 exports.deleteTour = factory.deleteOne(Tour)
 
+exports.getTourWithSlug = async (req, res) => {
+  const tour = await Tour.findOne({ slug: req.params.slug })
+    .populate('reviews')
+
+  if (!tour) {
+    throw new AppError('No document found with that ID', 404)
+  }
+
+  res.send(tour)
+}
+
 exports.aliasTopTours = (req, _, next) => {
   req.query.limit = '5'
   req.query.sort = '-ratingsAverage,price'

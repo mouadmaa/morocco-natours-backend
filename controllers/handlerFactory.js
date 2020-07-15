@@ -23,7 +23,7 @@ exports.getOne = (Model, popOptions) => async (req, res) => {
   const doc = await query
 
   if (!doc) {
-    throw new AppError('Aucun document trouvé avec cet ID', 404)
+    throw new AppError('No document found with that ID', 404)
   }
 
   res.send(doc)
@@ -40,7 +40,7 @@ exports.updateOne = Model => async (req, res) => {
   )
 
   if (!doc) {
-    throw new AppError('Aucun document trouvé avec cet ID', 404)
+    throw new AppError('No document found with that ID', 404)
   }
 
   res.send(doc)
@@ -50,7 +50,7 @@ exports.deleteOne = Model => async (req, res) => {
   const doc = await Model.findByIdAndDelete(req.params.id)
 
   if (!doc) {
-    throw new AppError(`Aucun document trouvé avec cet ID`, 404)
+    throw new AppError('No document found with that ID', 404)
   }
 
   res.status(204).send()
