@@ -128,7 +128,7 @@ tourSchema.pre('save', function (next) {
 
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: false })
-  this.populate({ path: 'guides', select: 'name email photo' })
+  // this.populate({ path: 'guides', select: 'role name email photo' })
   next()
 })
 

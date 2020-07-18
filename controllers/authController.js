@@ -42,7 +42,7 @@ exports.protect = async (req, _, next) => {
   const { id, iat } = await promisify(verify)(token, process.env.JWT_SECRET)
 
   // 3) Check if user still exists
-  const currentUser = await User.findById(id).select('name email role')
+  const currentUser = await User.findById(id).select('role name email photo')
   if (!currentUser) {
     throw new AppError('The user belonging to this token does no longer exist.', 401)
   }
@@ -142,20 +142,11 @@ exports.updateMyPassword = async (req, res) => {
 }
 
 const createSendToken = (res, user) => {
-  const token = user.generateAuthToken()
-
-  const cookieOptions = {
-    expires: new Date(Date.now() +
-      process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true
-  }
-  res.cookie('jwt', token, cookieOptions)
-
   res.send({
-    token, user: {
+    token: user.generateAuthToken(),
+    user: {
       id: user.id,
+      role: user.role,
       name: user.name,
       email: user.email,
       photo: user.photo,

@@ -3,13 +3,14 @@ const factory = require('./../controllers/handlerFactory')
 const AppError = require('../utils/appError')
 
 exports.getTours = factory.getAll(Tour)
-exports.getTour = factory.getOne(Tour, 'reviews')
+exports.getTour = factory.getOne(Tour, 'reviews guides')
 exports.createTour = factory.createOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
 exports.deleteTour = factory.deleteOne(Tour)
 
 exports.getTourWithSlug = async (req, res) => {
   const tour = await Tour.findOne({ slug: req.params.slug })
+    .populate({ path: 'guides', select: 'role name email photo' })
     .populate('reviews')
 
   if (!tour) {

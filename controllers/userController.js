@@ -9,8 +9,7 @@ exports.updateUser = factory.updateOne(User)
 exports.deleteUser = factory.deleteOne(User)
 
 exports.getMe = (req, _, next) => {
-  req.params.id = req.user.id
-  next()
+  res.send(req.user)
 }
 
 exports.updateMe = async (req, res) => {
