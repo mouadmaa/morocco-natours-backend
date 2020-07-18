@@ -8,7 +8,7 @@ exports.createUser = factory.createOne(User)
 exports.updateUser = factory.updateOne(User)
 exports.deleteUser = factory.deleteOne(User)
 
-exports.getMe = (req, _, next) => {
+exports.getMe = (req, res) => {
   res.send(req.user)
 }
 
