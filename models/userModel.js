@@ -72,11 +72,16 @@ userSchema.pre('save', async function (next) {
 // Generate Auth Token
 userSchema.methods.generateAuthToken = function () {
   const user = this
+
   const token = sign(
     { id: user.id }, process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN }
   )
-  return token
+
+  const expiration = Date.now() +
+    process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+
+  return { token, expiration }
 }
 
 // Find By Credentials

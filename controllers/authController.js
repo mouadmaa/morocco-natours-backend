@@ -24,16 +24,16 @@ exports.login = async (req, res) => {
   createSendToken(res, user)
 }
 
+exports.logout = (_, res) => {
+  res.cookie('token', '', {
+    expires: new Date(0),
+    httpOnly: true
+  }).send({ message: 'success' })
+}
+
 exports.protect = async (req, _, next) => {
   // 1) Getting token and check of it's there
-  let token
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1]
-  }
-
+  const { token } = req.cookies
   if (!token) {
     throw new AppError('You are not logged in! Please log in to get access.', 401)
   }
@@ -142,14 +142,22 @@ exports.updateMyPassword = async (req, res) => {
 }
 
 const createSendToken = (res, user) => {
+  const { token, expiration } = user.generateAuthToken()
+
+  res.cookie('token', token, {
+    expires: new Date(expiration),
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+  })
+
   res.send({
-    token: user.generateAuthToken(),
     user: {
       id: user.id,
       role: user.role,
       name: user.name,
       email: user.email,
       photo: user.photo,
-    }
+    },
+    expiration
   })
 }

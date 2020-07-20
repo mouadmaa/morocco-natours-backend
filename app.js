@@ -5,6 +5,7 @@ const mongoSanitize = require('express-mongo-sanitize')
 const cors = require('cors')
 const xss = require('xss-clean')
 const hpp = require('hpp')
+const cookieParser = require('cookie-parser')
 require('express-async-errors')
 
 const AppError = require('./utils/appError')
@@ -15,8 +16,12 @@ const app = express()
 
 // ------------ GLOBAL MIDDLEWARES ------------
 // Implement CORS
-app.use(cors())
-app.options('*', cors())
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+  methods: 'GET,HEAD,POST,PATCH,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
+}))
 
 // Secure Express apps by setting various HTTP headers
 app.use(helmet())
@@ -33,6 +38,7 @@ app.use('/api', rateLimit({
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }))
+app.use(cookieParser())
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize())
