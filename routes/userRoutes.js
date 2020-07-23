@@ -16,7 +16,7 @@ router.use(authController.protect)
 
 router.route('/me')
   .get(userController.getMe)
-  .patch(userController.updateMe)
+  .patch(userController.uploadUserPhoto, userController.resizeUserPhoto, userController.updateMe)
   .delete(userController.deleteMe)
 
 router.patch('/updateMyPassword', authController.updateMyPassword)

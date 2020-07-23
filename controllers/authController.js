@@ -128,12 +128,12 @@ exports.updateMyPassword = async (req, res) => {
   const user = await User.findById(req.user.id).select('+password')
 
   // 2) Check if POSTed current password is correnct 
-  if (!(await user.correctPassword(req.body.PasswordCurrent, user.password))) {
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     throw new AppError('Your current password is wrong.', 401)
   }
 
   // 3) If so, update password
-  user.password = req.body.password
+  user.password = req.body.passwordNew
   user.passwordConfirm = req.body.passwordConfirm
   await user.save()
 
