@@ -1,8 +1,6 @@
 const multer = require('multer')
 const sharp = require('sharp')
 
-const fs = require('fs')
-
 const Tour = require('./../models/tourModel')
 const factory = require('./../controllers/handlerFactory')
 const AppError = require('../utils/appError')
