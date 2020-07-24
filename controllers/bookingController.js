@@ -19,7 +19,7 @@ exports.getCheckoutSession = async (req, res) => {
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     // success_url: `${process.env.FRONTEND_URL}`,
-    success_url: `${process.env.FRONTEND_URL}/my-tours`,
+    success_url: `${process.env.FRONTEND_URL}/my-tours?alert=booking`,
     cancel_url: `${process.env.FRONTEND_URL}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
@@ -42,7 +42,7 @@ exports.getCheckoutSession = async (req, res) => {
 const createBookingCheckout = async session => {
   const tour = await Tour.findById(session.client_reference_id)
   const user = await User.find({ email: session.customer_email })
-  const price = session.line_items[0].amount / 100
+  const price = session.display_items[0].amount / 100
   await Booking.create({ user, tour, price })
 }
 
@@ -52,7 +52,7 @@ exports.webhookCheckout = (req, res) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
   const event = stripe.webhooks.constructEvent(req.body, signature, webhookSecret)
 
-  if (event.type === 'checkout.session.complete') {
+  if (event.type === 'checkout.session.completed') {
     createBookingCheckout(event.data.object)
     res.send({ received: true })
   }
