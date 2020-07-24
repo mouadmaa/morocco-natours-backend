@@ -1,8 +1,15 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
+const Booking = require('../models/bookingModel')
 const Tour = require('./../models/tourModel')
+const User = require('../models/userModel')
 const factory = require('./../controllers/handlerFactory')
-const AppError = require('../utils/appError')
+
+exports.createBooking = factory.createOne(Booking)
+exports.getBooking = factory.getOne(Booking)
+exports.getAllBookings = factory.getAll(Booking)
+exports.updateBooking = factory.updateOne(Booking)
+exports.deleteBooking = factory.deleteOne(Booking)
 
 exports.getCheckoutSession = async (req, res) => {
   // Get the currently booked tour 
@@ -11,7 +18,8 @@ exports.getCheckoutSession = async (req, res) => {
   // Create checkout session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
-    success_url: `${process.env.FRONTEND_URL}`,
+    // success_url: `${process.env.FRONTEND_URL}`,
+    success_url: `${process.env.FRONTEND_URL}/my-tours`,
     cancel_url: `${process.env.FRONTEND_URL}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
@@ -29,4 +37,23 @@ exports.getCheckoutSession = async (req, res) => {
 
   // Create session as response
   res.send({ session_id: session.id })
+}
+
+const createBookingCheckout = async session => {
+  const tour = await Tour.findById(session.client_reference_id)
+  const user = await User.find({ email: session.customer_email })
+  const price = session.line_items[0].amount / 100
+  await Booking.create({ user, tour, price })
+}
+
+exports.webhookCheckout = (req, res) => {
+  const signature = req.headers['stripe-signature']
+
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  const event = stripe.webhooks.constructEvent(req.body, signature, webhookSecret)
+
+  if (event.type === 'checkout.session.complete') {
+    createBookingCheckout(event.data.object)
+    res.send({ received: true })
+  }
 }

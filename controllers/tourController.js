@@ -2,6 +2,7 @@ const multer = require('multer')
 const sharp = require('sharp')
 
 const Tour = require('./../models/tourModel')
+const Booking = require('../models/bookingModel')
 const factory = require('./../controllers/handlerFactory')
 const AppError = require('../utils/appError')
 
@@ -10,6 +11,15 @@ exports.getTour = factory.getOne(Tour, 'reviews guides')
 exports.createTour = factory.createOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
 exports.deleteTour = factory.deleteOne(Tour)
+
+exports.getMyTours = async (req, res) => {
+  const bookings = await Booking.find({ user: req.user.id })
+
+  const tourIds = bookings.map(el => el.tour)
+  const tours = await Tour.find({ _id: { $in: tourIds } })
+
+  res.send(tours)
+}
 
 const multerStorage = multer.memoryStorage()
 

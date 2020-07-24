@@ -143,7 +143,7 @@ const createSendToken = (res, user) => {
 
   res.cookie('token', token, {
     expires: new Date(expiration),
-    secure: process.env.NODE_ENV === 'production',
+    secure: req.secure || req.headers('x-forwarded-proto') === 'https',
     httpOnly: true,
   })
 

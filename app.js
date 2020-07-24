@@ -10,6 +10,7 @@ require('express-async-errors')
 
 const AppError = require('./utils/appError')
 const ErrorHandler = require('./controllers/errorController')
+const { webhookCheckout } = require('./controllers/bookingController')
 
 // Start express app
 const app = express()
@@ -23,6 +24,8 @@ app.use(cors({
   allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
 }))
 
+app.enable('trust proxy')
+
 // Secure Express apps by setting various HTTP headers
 app.use(helmet())
 
@@ -35,6 +38,11 @@ app.use('/api', rateLimit({
   windowMs: 60 * 60 * 1000,
   message: 'Too many requests from this IP, please try again in an hour!'
 }))
+
+// Stripe Webhook
+app.post('/webhook-checkout',
+  express.raw({ type: 'application/json' }), webhookCheckout
+)
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }))
