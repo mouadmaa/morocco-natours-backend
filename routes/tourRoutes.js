@@ -14,7 +14,8 @@ router.get('/monthly-plan/:year', authController.protect, authController.restric
 router.get('/tours-within/:distance/center/:latlng/unit/:unit', tourController.getToursWithin)
 router.get('/distances/:latlng/unit/:unit', tourController.getDistances)
 router.route('/slug/:slug').get(tourController.getTourWithSlug)
-router.route('/my-tours').get(tourController.getMyTours)
+
+router.route('/my-tours').get(authController.protect, tourController.getMyTours)
 
 router.route('/')
   .get(tourController.getTours)
