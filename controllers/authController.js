@@ -14,7 +14,7 @@ exports.signup = async (req, res) => {
   const url = `${process.env.FRONTEND_URL}/account`
   await new Email(user, url).sendWelcome()
 
-  createSendToken(res, user)
+  createSendToken(req, res, user)
 }
 
 exports.login = async (req, res) => {
@@ -25,7 +25,7 @@ exports.login = async (req, res) => {
   }
 
   const user = await User.findByCredentials(email, password)
-  createSendToken(res, user)
+  createSendToken(req, res, user)
 }
 
 exports.logout = (_, res) => {
@@ -117,7 +117,7 @@ exports.resetPassword = async (req, res) => {
   await user.save()
 
   // 4) Log the user in, send JWt
-  createSendToken(res, user)
+  createSendToken(req, res, user)
 }
 
 exports.updateMyPassword = async (req, res) => {
@@ -135,15 +135,15 @@ exports.updateMyPassword = async (req, res) => {
   await user.save()
 
   // 4) Log user in, send JWT
-  createSendToken(res, user)
+  createSendToken(req, res, user)
 }
 
-const createSendToken = (res, user) => {
+const createSendToken = (req, res, user) => {
   const { token, expiration } = user.generateAuthToken()
 
   res.cookie('token', token, {
     expires: new Date(expiration),
-    secure: req.secure || req.headers('x-forwarded-proto') === 'https',
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
     httpOnly: true,
   })
 
