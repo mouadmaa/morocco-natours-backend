@@ -145,6 +145,7 @@ const createSendToken = (req, res, user) => {
     expires: new Date(expiration),
     secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
     httpOnly: true,
+    sameSite: false
   })
 
   res.send({
