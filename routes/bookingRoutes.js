@@ -8,6 +8,7 @@ const router = Router()
 router.use(authController.protect)
 
 router.get('/checkout-session/:tourId', bookingController.getCheckoutSession)
+router.get('/my-bookings', bookingController.getMyBookings)
 
 router.use(authController.restrictTo('admin', 'lead-guide'))
 

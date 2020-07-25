@@ -11,6 +11,15 @@ exports.getAllBookings = factory.getAll(Booking)
 exports.updateBooking = factory.updateOne(Booking)
 exports.deleteBooking = factory.deleteOne(Booking)
 
+exports.getMyBookings = async (req, res) => {
+  const bookings = await Booking.find({ user: req.user.id })
+
+  const tourIds = bookings.map(el => el.tour)
+  const tours = await Tour.find({ _id: { $in: tourIds } })
+
+  res.send(tours)
+}
+
 exports.getCheckoutSession = async (req, res) => {
   // Get the currently booked tour 
   const tour = await Tour.findById(req.params.tourId)
