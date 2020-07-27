@@ -8,7 +8,7 @@ const router = Router()
 
 router.use('/:tourId/reviews', reviewRouter)
 
-router.get('/top-5-cheap', tourController.aliasTopTours, tourController.getTours)
+router.get('/top-3-cheap', tourController.aliasTopTours, tourController.getTours)
 router.get('/tour-stats', tourController.getTourStats)
 router.get('/monthly-plan/:year', authController.protect, authController.restrictTo('admin', 'lead-guide', 'guide'), tourController.getMonthlyPlan)
 router.get('/tours-within/:distance/center/:latlng/unit/:unit', tourController.getToursWithin)

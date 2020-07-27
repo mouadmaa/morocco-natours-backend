@@ -73,9 +73,9 @@ exports.getTourWithSlug = async (req, res) => {
 }
 
 exports.aliasTopTours = (req, _, next) => {
-  req.query.limit = '5'
+  req.query.limit = '3'
   req.query.sort = '-ratingsAverage,price'
-  req.query.fields = 'name,price,ratingsAverage,summary,difficulty'
+  // req.query.fields = 'name,price,ratingsAverage,summary,difficulty'
   next()
 }
 
