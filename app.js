@@ -6,6 +6,7 @@ const cors = require('cors')
 const xss = require('xss-clean')
 const hpp = require('hpp')
 const cookieParser = require('cookie-parser')
+const enforce = require('express-sslify')
 require('express-async-errors')
 
 const AppError = require('./utils/appError')
@@ -25,6 +26,9 @@ app.use(cors({
 }))
 
 app.enable('trust proxy')
+
+// Redirect to HTTPS
+app.use(enforce.HTTPS({ trustProtoHeader: true }))
 
 // Secure Express apps by setting various HTTP headers
 app.use(helmet())
