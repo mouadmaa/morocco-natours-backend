@@ -19,13 +19,12 @@ const app = express()
 // ------------ GLOBAL MIDDLEWARES ------------
 // Implement CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: true,
   credentials: true,
-  methods: 'GET,HEAD,POST,PATCH,DELETE,OPTIONS',
-  allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
 }))
 
 if (process.env.NODE_ENV === 'production') {
+  // Heroku Trust Proxy
   app.enable('trust proxy')
   // Redirect to HTTPS
   app.use(enforce.HTTPS({ trustProtoHeader: true }))
@@ -39,7 +38,7 @@ app.use('/images', express.static('images'))
 
 // Basic rate-limiting middleware for Express
 app.use('/api', rateLimit({
-  max: 1000,
+  max: 100,
   windowMs: 60 * 60 * 1000,
   message: 'Too many requests from this IP, please try again in an hour!'
 }))
