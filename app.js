@@ -25,10 +25,11 @@ app.use(cors({
   allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
 }))
 
-app.enable('trust proxy')
-
-// Redirect to HTTPS
-app.use(enforce.HTTPS({ trustProtoHeader: true }))
+if (process.env.NODE_ENV === 'production') {
+  app.enable('trust proxy')
+  // Redirect to HTTPS
+  app.use(enforce.HTTPS({ trustProtoHeader: true }))
+}
 
 // Secure Express apps by setting various HTTP headers
 app.use(helmet())
