@@ -5,8 +5,7 @@
   "main": "server",
   "scripts": {
     "start": "node server",
-    "dev": "nodemon server",
-    "dev:prod": "SET NODE_ENV=production & nodemon server"
+    "dev": "nodemon server"
   },
   "keywords": [],
   "author": "",

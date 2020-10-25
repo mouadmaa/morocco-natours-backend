@@ -12,7 +12,7 @@ exports.updateBooking = factory.updateOne(Booking)
 exports.deleteBooking = factory.deleteOne(Booking)
 
 exports.getMyBookings = async (req, res) => {
-  const bookings = await Booking.find({ user: req.user.id })
+  const bookings = await Booking.find({ user: req.userId })
 
   const tourIds = bookings.map(el => el.tour)
   const tours = await Tour.find({ _id: { $in: tourIds } })
@@ -21,8 +21,10 @@ exports.getMyBookings = async (req, res) => {
 }
 
 exports.getCheckoutSession = async (req, res) => {
-  // Get the currently booked tour 
+  // Get the currently booked tour
   const tour = await Tour.findById(req.params.tourId)
+  const user = await User.findById(req.userId)
+
 
   // Create checkout session
   const session = await stripe.checkout.sessions.create({
@@ -30,7 +32,7 @@ exports.getCheckoutSession = async (req, res) => {
     // success_url: `${process.env.FRONTEND_URL}`,
     success_url: `${process.env.FRONTEND_URL}/my-bookings?alert=booking`,
     cancel_url: `${process.env.FRONTEND_URL}/tour/${tour.slug}`,
-    customer_email: req.user.email,
+    customer_email: user.email,
     client_reference_id: req.params.tourId,
     line_items: [
       {

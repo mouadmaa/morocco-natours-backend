@@ -2,7 +2,6 @@ const multer = require('multer')
 const sharp = require('sharp')
 
 const Tour = require('./../models/tourModel')
-const Booking = require('../models/bookingModel')
 const factory = require('./../controllers/handlerFactory')
 const AppError = require('../utils/appError')
 

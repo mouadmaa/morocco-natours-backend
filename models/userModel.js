@@ -2,7 +2,6 @@ const { randomBytes, createHash } = require('crypto')
 
 const { Schema, model } = require('mongoose')
 const { hash, compare } = require('bcryptjs')
-const { sign } = require('jsonwebtoken')
 const { isEmail } = require('validator')
 
 const AppError = require('../utils/appError')
@@ -19,7 +18,7 @@ const userSchema = new Schema(
       required: [true, 'Please provide your email'],
       unique: true,
       lowercase: true,
-      validate: [isEmail, 'Please provide a valide email']
+      validate: [isEmail, 'Please provide a valid email']
     },
     password: {
       type: String,
@@ -68,21 +67,6 @@ userSchema.pre('save', async function (next) {
   }
   next()
 })
-
-// Generate Auth Token
-userSchema.methods.generateAuthToken = function () {
-  const user = this
-
-  const token = sign(
-    { id: user.id }, process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
-  )
-
-  const expiration = Date.now() +
-    process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-
-  return { token, expiration }
-}
 
 // Find By Credentials
 userSchema.statics.findByCredentials = async (email, password) => {

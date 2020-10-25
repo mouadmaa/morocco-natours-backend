@@ -1,11 +1,11 @@
-const { promisify } = require('util')
 const { createHash } = require('crypto')
 
 const { verify } = require('jsonwebtoken')
 
 const User = require('../models/userModel')
 const AppError = require('../utils/appError')
-const Email = require('../services/emails/email')
+const Email = require('../services/Email')
+const { sendToken, sendRefreshToken } = require('../utils/createToken')
 
 exports.signup = async (req, res) => {
   const { name, email, password, passwordConfirm } = req.body
@@ -14,7 +14,7 @@ exports.signup = async (req, res) => {
   const url = `${process.env.FRONTEND_URL}/account`
   await new Email(user, url).sendWelcome()
 
-  createSendToken(req, res, user)
+  sendToken(res, user)
 }
 
 exports.login = async (req, res) => {
@@ -25,47 +25,46 @@ exports.login = async (req, res) => {
   }
 
   const user = await User.findByCredentials(email, password)
-  createSendToken(req, res, user)
+  sendToken(res, user)
 }
 
 exports.logout = (_, res) => {
-  res.cookie('token', '', {
-    expires: new Date(0),
-    httpOnly: true
-  }).send({ message: 'success' })
+  sendRefreshToken(res, '')
+  res.send({ success: true })
 }
 
 exports.protect = async (req, _, next) => {
   // 1) Getting token and check of it's there
-  const { token } = req.cookies
-  if (!token) {
-    throw new AppError('You are not logged in! Please log in to get access.', 401)
-  }
+  const authorization = req.headers['authorization']
+  if (!authorization) throw new AppError('You are not logged in! Please log in to get access.', 401)
 
   // 2) Verification token
-  const { id, iat } = await promisify(verify)(token, process.env.JWT_SECRET)
-
-  // 3) Check if user still exists
-  const currentUser = await User.findById(id).select('role name email photo')
-  if (!currentUser) {
-    throw new AppError('The user belonging to this token does no longer exist.', 401)
-  }
-
-  // 4) Check if user changed password after the token was issued
-  if (currentUser.changedPasswordAfter(iat)) {
-    throw new AppError('User recently changed password! Please log in again.', 401)
-  }
+  const token = authorization.replace('Bearer ', '')
+  const { userId, userRole } = verify(token, process.env.ACCESS_TOKEN_SECRET)
 
   // GRANT ACCESS TO PROTECTED ROUTE
-  req.user = currentUser
+  req.userId = userId
+  req.userRole = userRole
   next()
 }
 
 exports.restrictTo = (...roles) => async (req, _, next) => {
-  if (!roles.includes(req.user.role)) {
+  if (!roles.includes(req.userRole)) {
     throw new AppError('you do not have permission to perform this action.', 403)
   }
   next()
+}
+
+exports.refreshToken = async (req, res) => {
+  const { jwt } = req.cookies
+  if (!jwt) throw new AppError('You are not logged in! Please log in to get access.', 401)
+
+  const { userId } = verify(jwt, process.env.REFRESH_TOKEN_SECRET)
+
+  const user = await User.findById(userId)
+  if (!user) throw new AppError('You are not logged in! Please log in to get access.', 401)
+
+  sendToken(res, user)
 }
 
 exports.forgotPassword = async (req, res) => {
@@ -113,18 +112,18 @@ exports.resetPassword = async (req, res) => {
   user.passwordResetToken = undefined
   user.passwordResetExpires = undefined
 
-  // 3) Save user and update changedPassswordAt proprty for the user
+  // 3) Save user and update changedPasswordAt property for the user
   await user.save()
 
   // 4) Log the user in, send JWt
-  createSendToken(req, res, user)
+  sendToken(res, user)
 }
 
 exports.updateMyPassword = async (req, res) => {
   // 1) Get user from collection
-  const user = await User.findById(req.user.id).select('+password')
+  const user = await User.findById(req.userId).select('+password')
 
-  // 2) Check if POSTed current password is correnct 
+  // 2) Check if POSTed current password is correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     throw new AppError('Your current password is wrong.', 401)
   }
@@ -135,27 +134,5 @@ exports.updateMyPassword = async (req, res) => {
   await user.save()
 
   // 4) Log user in, send JWT
-  createSendToken(req, res, user)
-}
-
-const createSendToken = (req, res, user) => {
-  const { token, expiration } = user.generateAuthToken()
-
-  res.cookie('token', token, {
-    expires: new Date(expiration),
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
-    httpOnly: true,
-    sameSite: 'none'
-  })
-
-  res.send({
-    user: {
-      id: user.id,
-      role: user.role,
-      name: user.name,
-      email: user.email,
-      photo: user.photo,
-    },
-    expiration
-  })
+  sendToken(res, user)
 }

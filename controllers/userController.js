@@ -1,7 +1,7 @@
+const fs = require('fs')
+
 const multer = require('multer')
 const sharp = require('sharp')
-
-const fs = require('fs')
 
 const User = require('../models/userModel')
 const factory = require('./handlerFactory')
@@ -13,8 +13,10 @@ exports.createUser = factory.createOne(User)
 exports.updateUser = factory.updateOne(User)
 exports.deleteUser = factory.deleteOne(User)
 
-exports.getMe = (req, res) => {
-  res.send(req.user)
+exports.getMe = async (req, res) => {
+  const user = await User.findById(req.userId)
+    .select('name email role photo')
+  res.send(user)
 }
 
 // const multerStorage = multer.diskStorage({
@@ -23,7 +25,7 @@ exports.getMe = (req, res) => {
 //   },
 //   filename: (req, file, cb) => {
 //     const ext = file.mimetype.split('/')[1]
-//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`)
+//     cb(null, `user-${req.userId}-${Date.now()}.${ext}`)
 //   }
 // })
 const multerStorage = multer.memoryStorage()
@@ -46,7 +48,7 @@ exports.uploadUserPhoto = upload.single('photo')
 exports.resizeUserPhoto = async (req, res, next) => {
   if (!req.file) return next()
 
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`
+  req.file.filename = `user-${req.userId}-${Date.now()}.jpeg`
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
@@ -69,15 +71,16 @@ exports.updateMe = async (req, res) => {
   if (req.file) {
     filteredBody.photo = req.file.filename
 
-    if (req.user.photo) {
-      fs.unlink(`images/users/${req.user.photo}`, () => {
+    const user = await User.findById(req.userId)
+    if (user.photo) {
+      fs.unlink(`images/users/${user.photo}`, () => {
         new AppError('Something went wrong, could not delete photo', 500)
       })
     }
   }
 
   // Update user document
-  const user = await User.findByIdAndUpdate(req.user.id, filteredBody,
+  const user = await User.findByIdAndUpdate(req.userId, filteredBody,
     { new: true, runValidators: true }
   )
 
@@ -91,7 +94,7 @@ exports.updateMe = async (req, res) => {
 }
 
 exports.deleteMe = async (req, res) => {
-  await User.findByIdAndUpdate(req.user.id, { active: false })
+  await User.findByIdAndUpdate(req.userId, { active: false })
   res.status(204).send()
 }
 

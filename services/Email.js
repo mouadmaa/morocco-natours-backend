@@ -32,7 +32,7 @@ class Email {
   }
 
   async send(template, subject) {
-    const html = pug.renderFile(`${__dirname}/templates/${template}.pug`, {
+    const html = pug.renderFile(`${__dirname}/emailTemplates/${template}.pug`, {
       firstName: this.firstName, url: this.url, subject
     })
 
@@ -48,7 +48,7 @@ class Email {
   }
 
   async sendWelcome() {
-    await this.send('welcome', 'Welcome to the Natours Family!')
+    await this.send('welcome', 'Welcome to the Morocco Natours Family!')
   }
 
   async sendPasswordReset() {
