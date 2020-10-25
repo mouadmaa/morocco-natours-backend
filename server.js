@@ -1,34 +1,38 @@
-const { connect } = require('mongoose')
-const dotenv = require('dotenv')
+require('dotenv/config')
+require('express-async-errors')
+const mongoose = require('mongoose')
 
-dotenv.config({ path: './config.env' })
 const app = require('./app')
 
-  // Database
-  ; (async () => {
-    await connect(process.env.DATABASE, {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-    })
-    console.log('Database is connected...')
-  })()
-
-// Server
-const server = app.listen(process.env.PORT, () => {
-  console.log(`Server is running...`)
+// Database
+mongoose.connect(
+  process.env.DATABASE_URL,
+  {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  }
+).then(() => {
+  console.log('> 🥭🥭🥭 Database is connected 🔥')
 })
 
-process.on('uncaughtException', err => {
-  console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...')
-  console.log(err.name, err.message)
+// Server
+const PORT = 5000
+const server = app.listen(PORT, () => console.log(
+  process.env.NODE_ENV === 'production' ? `> 🚀🚀🚀 Server is running 🔥`
+    : `> 🚀🚀🚀 Server is running on http://localhost:${PORT} 🔥`
+))
+
+process.on('uncaughtException', error => {
+  console.error('UNCAUGHT EXCEPTION! 💥 Shutting down...')
+  console.error(error.name, error.message)
   process.exit(1)
 })
 
-process.on('unhandledRejection', err => {
-  console.log('UNHANDLED REJECTION! 💥 Shutting down...')
-  console.log(err.name, err.message)
+process.on('unhandledRejection', error => {
+  console.error('UNHANDLED REJECTION! 💥 Shutting down...')
+  console.error(error.name, error.message)
   server.close(() => process.exit(1))
 })
 
