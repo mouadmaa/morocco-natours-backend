@@ -1,9 +1,9 @@
 const multer = require('multer')
-const sharp = require('sharp')
 
 const Tour = require('./../models/tourModel')
 const factory = require('./../controllers/handlerFactory')
 const AppError = require('../utils/appError')
+const { cloudinaryStorageTours } = require('../services/cloudinary')
 
 exports.getTours = factory.getAll(Tour)
 exports.getTour = factory.getOne(Tour, 'reviews guides')
@@ -11,19 +11,15 @@ exports.createTour = factory.createOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
 exports.deleteTour = factory.deleteOne(Tour)
 
-const multerStorage = multer.memoryStorage()
-
-const multerFilter = (_, file, cb) => {
-  if (file.mimetype.startsWith('image')) {
-    cb(null, true)
-  } else (
-    cb(new AppError('Not an image! Please upload only images.', 400), false)
-  )
-}
-
 const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter
+  storage: cloudinaryStorageTours,
+  fileFilter: (_, file, cb) => {
+    if (file.mimetype.startsWith('image')) {
+      cb(null, true)
+    } else (
+      cb(new AppError('Not an image! Please upload only images.', 400), false)
+    )
+  }
 })
 
 exports.uploadTourImages = upload.fields([
@@ -31,28 +27,14 @@ exports.uploadTourImages = upload.fields([
   { name: 'images', maxCount: 3 }
 ])
 
-exports.resizeTourImages = async (req, res, next) => {
+exports.handleTourImages = (req, res, next) => {
   if (req.files.imageCover && req.files.imageCover.length) {
-    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`
-    await sharp(req.files.imageCover[0].buffer)
-      .resize(2000, 1333)
-      .toFormat('jpeg')
-      .jpeg({ quality: 90 })
-      .toFile(`images/tours/${req.body.imageCover}`)
+    req.body.imageCover = req.files.imageCover[0].path
   }
 
   if (req.files.images && req.files.images.length) {
     req.body.images = []
-    await Promise.all(req.files.images.map(async (file, index) => {
-      const filename = `tour-${req.params.id}-${Date.now()}-${index + 1}.jpeg`
-      await sharp(file.buffer)
-        .resize(2000, 1333)
-        .toFormat('jpeg')
-        .jpeg({ quality: 90 })
-        .toFile(`images/tours/${filename}`)
-
-      req.body.images.push(filename)
-    }))
+    req.files.images.map(async file => req.body.images.push(file.path))
   }
 
   next()
@@ -73,7 +55,7 @@ exports.getTourWithSlug = async (req, res) => {
 exports.aliasTopTours = (req, _, next) => {
   req.query.limit = '3'
   req.query.sort = '-ratingsAverage,price'
-  // req.query.fields = 'name,price,ratingsAverage,summary,difficulty'
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty'
   next()
 }
 

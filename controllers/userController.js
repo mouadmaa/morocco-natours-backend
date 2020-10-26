@@ -1,11 +1,9 @@
-const fs = require('fs')
-
 const multer = require('multer')
-const sharp = require('sharp')
 
 const User = require('../models/userModel')
 const factory = require('./handlerFactory')
 const AppError = require('../utils/appError')
+const { cloudinaryStorageUsers, cloudinaryRemoveImage } = require('../services/cloudinary')
 
 exports.getUsers = factory.getAll(User)
 exports.getUser = factory.getOne(User)
@@ -19,44 +17,18 @@ exports.getMe = async (req, res) => {
   res.send(user)
 }
 
-// const multerStorage = multer.diskStorage({
-//   destination: (_1, _2, cb) => {
-//     cb(null, 'images/users')
-//   },
-//   filename: (req, file, cb) => {
-//     const ext = file.mimetype.split('/')[1]
-//     cb(null, `user-${req.userId}-${Date.now()}.${ext}`)
-//   }
-// })
-const multerStorage = multer.memoryStorage()
-
-const multerFilter = (_, file, cb) => {
-  if (file.mimetype.startsWith('image')) {
-    cb(null, true)
-  } else (
-    cb(new AppError('Not an image! Please upload only images.', 400), false)
-  )
-}
-
 const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter
+  storage: cloudinaryStorageUsers,
+  fileFilter: (_, file, cb) => {
+    if (file.mimetype.startsWith('image')) {
+      cb(null, true)
+    } else (
+      cb(new AppError('Not an image! Please upload only images.', 400), false)
+    )
+  }
 })
 
 exports.uploadUserPhoto = upload.single('photo')
-
-exports.resizeUserPhoto = async (req, res, next) => {
-  if (!req.file) return next()
-
-  req.file.filename = `user-${req.userId}-${Date.now()}.jpeg`
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat('jpeg')
-    .jpeg({ quality: 90 })
-    .toFile(`images/users/${req.file.filename}`)
-
-  next()
-}
 
 exports.updateMe = async (req, res) => {
   // Create error if user POSTsd password data
@@ -69,14 +41,9 @@ exports.updateMe = async (req, res) => {
   // Filtered out unwanted fields names that are not allowed to be updated
   const filteredBody = filterObj(req.body, 'name', 'email')
   if (req.file) {
-    filteredBody.photo = req.file.filename
-
     const user = await User.findById(req.userId)
-    if (user.photo) {
-      fs.unlink(`images/users/${user.photo}`, () => {
-        new AppError('Something went wrong, could not delete photo', 500)
-      })
-    }
+    cloudinaryRemoveImage(`MOROCCO_NATOURS${user.photo.split('/MOROCCO_NATOURS')[1].split('.')[0]}`)
+    filteredBody.photo = req.file.path
   }
 
   // Update user document
@@ -86,9 +53,9 @@ exports.updateMe = async (req, res) => {
 
   res.send({
     id: user.id,
-    role: user.role,
     name: user.name,
     email: user.email,
+    role: user.role,
     photo: user.photo,
   })
 }

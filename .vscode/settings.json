@@ -1,10 +1,12 @@
 {
   "cSpell.words": [
+    "CLOUDINARY",
     "MIDDLEWARES",
     "Natours",
     "SENDGRID",
     "resave",
     "sslify",
+    "uploader",
     "virtuals"
   ]
 }
