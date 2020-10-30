@@ -5,7 +5,7 @@ const { verify } = require('jsonwebtoken')
 const User = require('../models/userModel')
 const AppError = require('../utils/appError')
 const Email = require('../services/Email')
-const { sendToken, sendRefreshToken } = require('../utils/createToken')
+const { sendUserWithToken, sendRefreshToken } = require('../utils/createToken')
 
 exports.signup = async (req, res) => {
   const { name, email, password, passwordConfirm } = req.body
@@ -14,7 +14,7 @@ exports.signup = async (req, res) => {
   const url = `${process.env.FRONTEND_URL}/account`
   await new Email(user, url).sendWelcome()
 
-  sendToken(res, user)
+  sendUserWithToken(res, user)
 }
 
 exports.login = async (req, res) => {
@@ -25,7 +25,7 @@ exports.login = async (req, res) => {
   }
 
   const user = await User.findByCredentials(email, password)
-  sendToken(res, user)
+  sendUserWithToken(res, user)
 }
 
 exports.logout = (_, res) => {
@@ -64,7 +64,7 @@ exports.refreshToken = async (req, res) => {
   const user = await User.findById(userId)
   if (!user) throw new AppError('You are not logged in! Please log in to get access.', 401)
 
-  sendToken(res, user)
+  sendUserWithToken(res, user)
 }
 
 exports.forgotPassword = async (req, res) => {
@@ -116,7 +116,7 @@ exports.resetPassword = async (req, res) => {
   await user.save()
 
   // 4) Log the user in, send JWt
-  sendToken(res, user)
+  sendUserWithToken(res, user)
 }
 
 exports.updateMyPassword = async (req, res) => {
@@ -134,5 +134,5 @@ exports.updateMyPassword = async (req, res) => {
   await user.save()
 
   // 4) Log user in, send JWT
-  sendToken(res, user)
+  sendUserWithToken(res, user)
 }

@@ -13,7 +13,8 @@ router.get('/tour-stats', tourController.getTourStats)
 router.get('/monthly-plan/:year', authController.protect, authController.restrictTo('admin', 'lead-guide', 'guide'), tourController.getMonthlyPlan)
 router.get('/tours-within/:distance/center/:latlng/unit/:unit', tourController.getToursWithin)
 router.get('/distances/:latlng/unit/:unit', tourController.getDistances)
-router.get('/slug/:slug', tourController.getTourWithSlug)
+
+router.get('/tours-with-reviews-guides', tourController.toursWithReviewsAndGuides)
 
 router.route('/')
   .get(tourController.getTours)

@@ -11,6 +11,8 @@ exports.createTour = factory.createOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
 exports.deleteTour = factory.deleteOne(Tour)
 
+exports.toursWithReviewsAndGuides = factory.getAll(Tour, 'reviews guides')
+
 const upload = multer({
   storage: cloudinaryStorageTours,
   fileFilter: (_, file, cb) => {
@@ -38,18 +40,6 @@ exports.handleTourImages = (req, res, next) => {
   }
 
   next()
-}
-
-exports.getTourWithSlug = async (req, res) => {
-  const tour = await Tour.findOne({ slug: req.params.slug })
-    .populate({ path: 'guides', select: 'role name email photo' })
-    .populate('reviews')
-
-  if (!tour) {
-    throw new AppError('No document found with that ID', 404)
-  }
-
-  res.send(tour)
 }
 
 exports.aliasTopTours = (req, _, next) => {

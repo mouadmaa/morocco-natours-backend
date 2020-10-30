@@ -25,7 +25,7 @@ const sendRefreshToken = (res, token) => {
   })
 }
 
-const sendToken = (res, user) => {
+const sendUserWithToken = (res, user) => {
 
   sendRefreshToken(res, createRefreshToken(user))
 
@@ -43,6 +43,6 @@ const sendToken = (res, user) => {
 }
 
 module.exports = {
-  sendToken,
+  sendUserWithToken,
   sendRefreshToken,
 }
