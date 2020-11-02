@@ -42,7 +42,7 @@ exports.updateMe = async (req, res) => {
   const filteredBody = filterObj(req.body, 'name', 'email')
   if (req.file) {
     const user = await User.findById(req.userId)
-    cloudinaryRemoveImage(`MOROCCO_NATOURS${user.photo.split('/MOROCCO_NATOURS')[1].split('.')[0]}`)
+    if (user.photo) cloudinaryRemoveImage(`MOROCCO_NATOURS${user.photo.split('/MOROCCO_NATOURS')[1].split('.')[0]}`)
     filteredBody.photo = req.file.path
   }
 
