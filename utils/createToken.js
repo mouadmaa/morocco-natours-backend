@@ -4,7 +4,7 @@ const createAccessToken = user => {
   return sign(
     { userId: user.id, userRole: user.role },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '15m' }
   )
 }
 
