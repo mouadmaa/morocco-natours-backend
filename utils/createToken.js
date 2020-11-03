@@ -17,9 +17,10 @@ const createRefreshToken = user => {
 }
 
 const sendRefreshToken = (res, token) => {
+  const prod = process.env.NODE_ENV === 'production'
   res.cookie('jwt', token, {
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: prod ? 'none' : 'lax',
+    secure: prod,
     httpOnly: true,
   })
 }
